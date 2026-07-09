@@ -1,17 +1,26 @@
 const express = require("express");
 const app = express();
 
-app.use("/namaste",(req, res) => {
-    res.send("Namaste clients!!🙏 how can I help you?")
-});
+
+app.get("/user", (req, res) => {
+    res.send({FirstName: "Pardhu", LastName: "Yadav"})
+})
+
+app.post("/user", (req, res) => {
+    res.send("data successfully saved to the DB.")
+})
+
+app.delete("/user", (req, res) => {
+    res.send("Deleted successfully.")
+})
 
 app.use("/hello",(req, res) => {
     res.send("Hello hello 👋")
 });
 
-app.use("/", (req, res) => {
-    res.send("This is DashBoard 🚀🔍♻️✅")
-});
+app.use("/user", (req, res) => {
+    res.send("Hahahaha")
+})
 
 app.listen(7777, () => {
     console.log("server started sucessully at 7777...")
