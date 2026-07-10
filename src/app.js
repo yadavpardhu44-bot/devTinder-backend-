@@ -2,31 +2,33 @@ const express = require("express");
 const app = express();
 
 
-app.get("/a{b}cd", (req, res) => {
-    res.send({FirstName: "Pardhu", LastName: "Yadav"})
-})
-
-app.get("/a*cd", (req, res) => {
-    res.send({FirstName: "Pardhu", LastName: "Yadav"})
-})
-
-app.get(/a/, (req, res) => {
-    res.send({FirstName: "Pardhu", LastName: "Yadav"})
-})
-
-app.get(/.*fly$/, (req, res) => {
-    res.send({FirstName: "Pardhu", LastName: "Yadav"})
-})
+app.get("/user", (req, res, next) => {
+    next();
+    console.log("1st response")
+    //res.send("1st response")
+},
+[(req, res, next) => {
+    next();
+    console.log("2nd response")
+    //res.send("2nd response")
+},
+(req, res, next) => {
+    next();
+    console.log("3rd response")
+    //res.send("2nd response")
+}],
+[(req, res, next) => {
+    next();
+    console.log("4th response")
+    //res.send("4th response")
+}]
+)
 
 app.get("/user", (req, res) => {
-    console.log(req.query);
-    res.send({FirstName: "Pardhu", LastName: "Yadav"})
+    console.log("5th response");
+    res.send("6th response")
 })
 
-app.get("/user/:userid/:name/:password", (req, res) => {
-    console.log(req.params);
-    res.send({FirstName: "Pardhu", LastName: "Yadav"})
-})
 
 app.listen(7777, () => {
     console.log("server started sucessully at 7777...")
