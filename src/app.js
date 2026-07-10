@@ -1,32 +1,21 @@
 const express = require("express");
+const {adminAuthentication, userAuthentication} = require("./middlewares/auth")
 const app = express();
 
+app.use("/admin", adminAuthentication)
+app.get("/admin/data", (req, res) => {
+    res.send("This is the whole data")
+})
+app.delete("/admin/delete", (req, res) => {
+    res.send("Deleted the data")
+})
 
-app.get("/user", (req, res, next) => {
-    next();
-    console.log("1st response")
-    //res.send("1st response")
-},
-[(req, res, next) => {
-    next();
-    console.log("2nd response")
-    //res.send("2nd response")
-},
-(req, res, next) => {
-    next();
-    console.log("3rd response")
-    //res.send("2nd response")
-}],
-[(req, res, next) => {
-    next();
-    console.log("4th response")
-    //res.send("4th response")
-}]
-)
+app.get("/user/login", (req, res) => {
+    res.send("User loggedIn");
+})
 
-app.get("/user", (req, res) => {
-    console.log("5th response");
-    res.send("6th response")
+app.get("/user/data", userAuthentication, (req, res) => {
+    res.send("User data");
 })
 
 
