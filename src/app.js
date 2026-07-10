@@ -1,32 +1,30 @@
 const express = require("express");
-const {adminAuthentication, userAuthentication} = require("./middlewares/auth")
+const { connectDB } = require("./config/database");
+const User = require("./models/user");
 const app = express();
 
-app.use("/", (err, req, res, next) => {
-    if(err){
-        //log your error
-        res.status(500).send("something went wrong");
+app.post("/signup", async (req, res) => {
+    const user = new User({
+        firstName: "Mahendra Singh",
+        lastName: "Dhoni",
+        emailId: "ms@dhoni.com",
+        password: "dhoni@123",
+    })
+    try{
+        await user.save();
+        res.send("user added successfully.")
+    }
+    catch(err){
+        res.status(400).send("Error saving user:"+ err.message);
     }
 })
-
-app.get("/user", (req, res) => {
-    //try {
-        throw new Error("dksdk");
-        res.send("User data sent");
-    //}
-    // catch(err) {
-    //     if(err){
-    //         res.status(500).send("some error conatact support team")
-    //     }
-    // }
-})
-app.use("/", (err, req, res, next) => {
-    if(err){
-        //log your error
-        res.status(500).send("something went wrong");
-    }
-})
-
-app.listen(7777, () => {
-    console.log("server started sucessully at 7777...")
-});
+connectDB()
+  .then(() => {
+    console.log("Daabase connection is established.");
+    app.listen(7777, () => {
+      console.log("server started sucessully at 7777...");
+    });
+  })
+  .catch((err) => {
+    console.log("Database can not connect.", err);
+  });
