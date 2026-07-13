@@ -40,6 +40,7 @@ app.get("/user", async (req, res) => {
 
 app.post("/signup", async (req, res) => {
     const user = new User(req.body)
+    
     try{
         await user.save();
         res.send("user added successfully.")
@@ -67,20 +68,34 @@ app.delete("/user", async (req, res) => {
 
 // app.patch("/user", async (req, res) => {
 //   try{
-//     const user = await User.findByIdAndUpdate(req.body.userId, req.body, {returnDocument: 'after'});
+//     const user = await User.findByIdAndUpdate(req.body.userId, req.body, {returnDocument: 'after',
+//       runValidators: true
+//     });
 //     if(!user){
 //       res.status(400).send("user not found.");
 //     }
 //     else res.send(`Updated ${user.firstName} suceessully.`);
 //   }
 //   catch(err){
-//     res.status(400).send("something went wrong");
+//     res.status(400).send("sUpdate Failed"+err);
 //   }
 // })
 
-app.patch("/user", async (req, res) => {
+app.patch("/user/:emailId", async (req, res) => {
   try{
-    const user = await User.findOneAndUpdate({emailId: req.body.email}, req.body, {returnDocument: 'before'});
+    const ALLOWED_UPDATES = [
+      "userId", "photoURL", "about", "gender", "age", "skills"
+    ]
+    isUpdateAllowed = Object.keys(req.body).every((k) => ALLOWED_UPDATES.includes(k));
+    if(!isUpdateAllowed){
+      throw new Error("Update not allowed");
+    }
+    if(req.body?.skills.length > 10){
+      throw new Error("Skills cannot be more than 10.");
+    }
+    const user = await User.findOneAndUpdate({emailId: req.params.emailId}, req.body, {returnDocument: 'before',
+      runValidators: true
+    });
     console.log(req.body.email);
     if(!user){
       res.status(400).send("user not found.");
@@ -88,7 +103,7 @@ app.patch("/user", async (req, res) => {
     else res.send(`Updated ${user.firstName} suceessully.`);
   }
   catch(err){
-    res.status(400).send("something went wrong"+err);
+    res.status(400).send("Update Failed"+err);
   }
 })
 
