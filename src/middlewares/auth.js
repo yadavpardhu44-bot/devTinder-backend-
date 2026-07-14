@@ -1,23 +1,23 @@
-function adminAuthentication(req, res, next){
-    const token = "xyz";
-    if(token === "xyz"){
-        console.log("admin authenticated")
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+const userAuthentication = async (req, res, next) => {
+    try{
+        const {token} = req.cookies;
+        if(!token){
+            throw new Error("Login to continue");
+        }
+        const decodedObj = await jwt.verify(token, "Dev@Tinder1010");
+        const {_id} = decodedObj;
+        const user = await User.findById(_id);
+        if(!user){
+            throw new Error("user not found");
+        }
+        req.user = user;
         next();
     }
-    else{
-        res.status(401).send("Authentication failed");
+    catch(err){
+        res.status(400).send("ERROR:"+ err);
     }
 }
 
-const userAuthentication = (req, res, next) => {
-    const token = "abc";
-    if(token === "abc"){
-        console.log("user authenticated")
-        next();
-    }
-    else{
-        res.status(401).send("Authentication failed");
-    }
-}
-
-module.exports = {adminAuthentication, userAuthentication};
+module.exports = {userAuthentication};
