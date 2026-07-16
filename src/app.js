@@ -1,15 +1,18 @@
 const express = require("express");
 const { connectDB } = require("./config/database");
-const User = require("./models/user");
 const app = express();
-const {validateSignUp} = require("./utils/validate");
-const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
-const {userAuthentication} = require("./middlewares/auth");
 
 app.use(express.json());
 app.use(cookieParser());
+
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
 
 app.get("/user-id", async (req, res) => {
   const userId = req.body.userId;
@@ -41,71 +44,6 @@ app.get("/user", async (req, res) => {
   }
   catch(err){
     res.status(400).send("something went wrong:" + err);
-  }
-})
-
-app.post("/signup", async (req, res) => {
-    try{
-        // Validation of data
-        validateSignUp(req);
-        const {firstName, lastName, emailId, password} = req.body;
-        // Encrypt the password
-        const passwordHash = await bcrypt.hash(password, 10);
-        console.log(passwordHash);
-        //Creating a new insance
-        const user = new User({
-          firstName,
-          lastName,
-          emailId,
-          password: passwordHash
-        })
-        await user.save();
-        res.send("user added successfully.");
-    }
-    catch(err){
-        res.status(400).send("Error saving user:"+ err.message);
-    }
-})
-
-app.post("/login", async (req, res) => {
-  try{
-    const {emailId, password} = req.body;
-    const user = await User.findOne({emailId: emailId});
-    if(!user){
-      throw new Error("Invalid credentials");
-    }
-    const isPasswordValid = await user.validatePassword(password);
-    if(isPasswordValid){
-      const token = await user.getJWT();
-      res.cookie("token", token, {expires: new Date(Date.now() + 1 * 3600000)});
-      res.send("Logged in successfully.")
-    }
-    else{
-      throw new Error("Invalid credentials");
-    }
-  }
-  catch(err){
-        res.status(400).send("ERROR:"+ err.message);
-    }
-})
-
-app.get("/profile", userAuthentication, async (req, res) => {
-  try{
-    user = req.user;
-    res.send(user);
-  }
-  catch(err){
-    res.status(400).send("ERROR:"+ err.message);
-  }
-})
-
-app.post("/sendConnectionRequest", userAuthentication, (req, res) => {
-  try{
-    const user = req.user;
-    res.send(user.firstName + " sent the connection request.")
-  }
-  catch(err){
-    res.status(400).send("ERROR:"+ err.message);
   }
 })
 
