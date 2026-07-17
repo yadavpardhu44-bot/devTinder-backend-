@@ -11,7 +11,7 @@ requestRouter.post("/request/send/:status/:toUserId", userAuthentication, async 
     const status = req.params.status;
     const allowedStatus = ["interested", "ignored"];
     if(!allowedStatus.includes(status)){
-      return res.status(400).send("Invalid status type");
+      return res.status(400).json({message: "Invalid status type"});
     }
     const isConnectionRequestExist = await ConnectionRequest.findOne({
       $or: [
@@ -20,11 +20,11 @@ requestRouter.post("/request/send/:status/:toUserId", userAuthentication, async 
       ]
     })
     if(isConnectionRequestExist){
-      return res.status(400).send("connection request already exists.");
+      return res.status(400).json({message: "connection request already exists."});
     }
     const toUser = await User.findById(toUserId);
     if(!toUser){
-      return res.status(400).send("user not found");
+      return res.status(400).json({message: "user not found"});
     }
     const connectionRequest = new ConnectionRequest({
       fromUserId,
@@ -36,6 +36,35 @@ requestRouter.post("/request/send/:status/:toUserId", userAuthentication, async 
       message: req.user.firstName + " " +(status === "interested"?"is interested in":"ignored") + " " + toUser.firstName,
       data
     });
+  }
+  catch(err){
+    res.status(400).send("ERROR: "+ err.message);
+  }
+})
+
+requestRouter.post("/request/review/:status/:requestId", userAuthentication, async (req, res) => {
+  try{
+    const loggedInuser = req.user;
+    const allowedStatus = ["accepted", "rejected"];
+    const {status, requestId} = req.params
+    if(!allowedStatus.includes(status)){
+      return res.status(400).json({message: "Invalid status type"});
+    }
+
+    const connectionRequest = await ConnectionRequest.findOne({
+      _id: requestId,
+      toUserId: loggedInuser._id,
+      status: "interested",
+    })
+    if(!connectionRequest){
+      return res.status(400).json({message: "connection request not found"});
+    }
+    connectionRequest.status = status;
+    const data =  await connectionRequest.save();
+    res.json({
+      message: "connection request " + status,
+      data,
+    })
   }
   catch(err){
     res.status(400).send("ERROR: "+ err.message);
